@@ -1,0 +1,14 @@
+idf_component_register(
+    SRCS
+        "i2c_device.hpp"
+        "i2c_device.cpp"
+        "spi_device.hpp"
+        "spi_device.cpp"
+        "ow_device.hpp"
+        "ow_device.cpp"
+        "utility.hpp"
+    INCLUDE_DIRS
+        "."
+    REQUIRES 
+        driver
+)

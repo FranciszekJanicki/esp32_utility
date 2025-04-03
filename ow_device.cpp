@@ -24,7 +24,7 @@ static bool IRAM_ATTR rx_event_callback(rmt_channel_handle_t channel,
     return task_woken == pdTRUE;
 }
 
-namespace Utility {
+namespace ESP32_Utility {
 
     OWDevice::OWDevice(gpio_num_t const gpio_num, QueueHandle_t const rx_queue) noexcept : rx_queue{rx_queue}
     {
@@ -214,4 +214,4 @@ namespace Utility {
         ESP_ERROR_CHECK(rmt_del_encoder(this->bytes_encoder));
     }
 
-}; // namespace Utility
+}; // namespace ESP32_Utility

@@ -6,7 +6,6 @@ idf_component_register(
         "spi_device.cpp"
         "ow_device.hpp"
         "ow_device.cpp"
-        "utility.hpp"
     INCLUDE_DIRS
         "."
     REQUIRES 

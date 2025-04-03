@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <span>
 
-namespace Utility {
+namespace ESP32_Utility {
 
     struct OWDevice {
     public:
@@ -107,6 +107,6 @@ namespace Utility {
         bool initialized{false};
     };
 
-}; // namespace Utility
+}; // namespace ESP32_Utility
 
 #endif // OW_DEVICE_HPP

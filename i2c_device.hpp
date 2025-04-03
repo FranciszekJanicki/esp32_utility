@@ -2,14 +2,12 @@
 #define I2C_DEVICE_HPP
 
 #include "driver/i2c_master.h"
-#include "utility.hpp"
 #include <array>
-#include <bitset>
-#include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <utility>
 
-namespace Utility {
+namespace ESP32_Utility {
 
     struct I2CDevice {
     public:
@@ -25,20 +23,24 @@ namespace Utility {
         ~I2CDevice() noexcept = default;
 
         template <std::size_t SIZE>
-        void transmit_bytes(std::array<std::uint8_t, SIZE> const& bytes) const noexcept;
-        void transmit_byte(std::uint8_t const byte) const noexcept;
+        void transmit_bytes(std::array<std::uint8_t, SIZE> const& data) const noexcept;
+        void transmit_bytes(std::uint8_t* const data, std::size_t const size) const noexcept;
+        void transmit_byte(std::uint8_t const data) const noexcept;
 
         template <std::size_t SIZE>
         std::array<std::uint8_t, SIZE> receive_bytes() const noexcept;
+        void receive_bytes(std::uint8_t* const data, std::size_t const size) const noexcept;
         std::uint8_t receive_byte() const noexcept;
 
         template <std::size_t SIZE>
-        std::array<std::uint8_t, SIZE> read_bytes(std::uint8_t const reg_address) const noexcept;
-        std::uint8_t read_byte(std::uint8_t const reg_address) const noexcept;
+        void write_bytes(std::uint8_t const address, std::array<std::uint8_t, SIZE> const& data) const noexcept;
+        void write_bytes(std::uint8_t const address, std::uint8_t* const data, std::size_t const size) const noexcept;
+        void write_byte(std::uint8_t const address, std::uint8_t const data) const noexcept;
 
         template <std::size_t SIZE>
-        void write_bytes(std::uint8_t const reg_address, std::array<std::uint8_t, SIZE> const& bytes) const noexcept;
-        void write_byte(std::uint8_t const reg_address, std::uint8_t const byte) const noexcept;
+        std::array<std::uint8_t, SIZE> read_bytes(std::uint8_t const address) const noexcept;
+        void read_bytes(std::uint8_t const address, std::uint8_t* const data, std::size_t const size) const noexcept;
+        std::uint8_t read_byte(std::uint8_t const address) const noexcept;
 
     private:
         static constexpr std::uint32_t TIMEOUT{100U};
@@ -46,56 +48,44 @@ namespace Utility {
 
         void initialize() noexcept;
 
-        bool initialized_{false};
-
         i2c_master_dev_handle_t i2c_device_{nullptr};
     };
 
     template <std::size_t SIZE>
-    void I2CDevice::transmit_bytes(std::array<std::uint8_t, SIZE> const& bytes) const noexcept
+    inline void I2CDevice::transmit_bytes(std::array<std::uint8_t, SIZE> const& data) const noexcept
     {
-        std::array<std::uint8_t, SIZE> transmit{bytes};
-        if (this->initialized_) {
-            i2c_master_transmit(this->i2c_device_, transmit.data(), transmit.size(), TIMEOUT);
-        }
+        i2c_master_transmit(this->i2c_device_, data.data(), data.size(), TIMEOUT);
     }
 
     template <std::size_t SIZE>
-    std::array<std::uint8_t, SIZE> I2CDevice::receive_bytes() const noexcept
+    inline std::array<std::uint8_t, SIZE> I2CDevice::receive_bytes() const noexcept
     {
-        std::array<std::uint8_t, SIZE> receive{};
-        if (this->initialized_) {
-            i2c_master_receive(this->i2c_device_, receive.data(), receive.size(), TIMEOUT);
-        }
-        return receive;
+        auto data = std::array<std::uint8_t, SIZE>{};
+        i2c_master_receive(this->i2c_device_, data.data(), data.size(), TIMEOUT);
+
+        return data;
     }
 
     template <std::size_t SIZE>
-    std::array<std::uint8_t, SIZE> I2CDevice::read_bytes(std::uint8_t const reg_address) const noexcept
+    inline void I2CDevice::write_bytes(std::uint8_t const address,
+                                       std::array<std::uint8_t, SIZE> const& data) const noexcept
     {
-        std::array<std::uint8_t, SIZE> read{};
-        if (this->initialized_) {
-            i2c_master_transmit_receive(this->i2c_device_,
-                                        &reg_address,
-                                        sizeof(reg_address),
-                                        read.data(),
-                                        read.size(),
-                                        TIMEOUT);
-        }
-        return read;
+        auto address_data = std::array<std::uint8_t, 1UL + SIZE>{};
+        std::memcpy(address_data.data(), &address, 1UL);
+        std::memcpy(address_data.data() + 1UL, address_data.data(), SIZE);
+
+        i2c_master_transmit(this->i2c_device_, address_data.data(), address_data.size(), TIMEOUT);
     }
 
     template <std::size_t SIZE>
-    void I2CDevice::write_bytes(std::uint8_t const reg_address,
-                                std::array<std::uint8_t, SIZE> const& bytes) const noexcept
+    inline std::array<std::uint8_t, SIZE> I2CDevice::read_bytes(std::uint8_t const address) const noexcept
     {
-        if (this->initialized_) {
-            std::array<std::uint8_t, 1UL + SIZE> write{reg_address};
-            std::memcpy(write.data() + 1UL, bytes.data(), SIZE);
-            i2c_master_transmit(this->i2c_device_, write.data(), write.size(), TIMEOUT);
-        }
+        auto data = std::array<std::uint8_t, SIZE>{};
+        i2c_master_transmit_receive(this->i2c_device_, &address, 1UL, data.data(), data.size(), TIMEOUT);
+
+        return data;
     }
 
-}; // namespace Utility
+}; // namespace ESP32_Utility
 
 #endif // I2C_DEVICE_HPP

@@ -3,12 +3,9 @@
 
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
-#include "utility.hpp"
-#include <algorithm>
 #include <array>
-#include <bitset>
 #include <cstdint>
-#include <ranges>
+#include <cstring>
 #include <utility>
 
 namespace ESP32_Utility {
@@ -94,6 +91,10 @@ namespace ESP32_Utility {
         transaction.rxlength = 0;
         transaction.flags = 0;
         transaction.tx_buffer = this->dma_buffer_;
+      
+        if (!this->spi_device_) {
+            puts("YEEES\n\r");
+        }
 
         std::memcpy(this->dma_buffer_, data.data(), data.size());
 

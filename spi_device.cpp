@@ -2,7 +2,6 @@
 #include "driver/gpio.h"
 #include "driver/spi_common.h"
 #include "driver/spi_master.h"
-#include "utility.hpp"
 
 namespace ESP32_Utility {
 
